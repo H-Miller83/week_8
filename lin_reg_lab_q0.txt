@@ -1,0 +1,84 @@
+Lab IV: Linear Models
+
+
+1. What makes a model "linear"? "Linear" in what?
+
+A model is linear if the parameters (which are the numbers the model learns so predictions can best fit the data) 
+are linear. This means that each coefficient besides the intercept is multiplied by some input variable x (there 
+can be multiple features that the model uses, meaning more coefficients with an associated x), and that the coefficients 
+are simply of power 1 and stand alone. For example, the model that creates the equation $y = beta_0 + beta_1 * x$ is a 
+linear model because the betas are linear. However, the equation $y = beta_0 + beta_1^2 * x$ is not linear because the 
+beta_1 coefficient is squared. Overall, a linear model is a weighted sum of feature variables such that the weights/coefficients 
+are incorporated linearly in the model.
+
+
+
+2. How do you interpret the coefficient for a dummy/one-hot-encoded variable? (This is a trick question, and the trick involves 
+how you handle the intercept of the model.) There's further explanation at the end of this document, if needed.
+
+The coefficient for a one-hot-encoded variable depends on the intercept after using drop_first = True when encoding the categorical 
+variables (in pd.get_dummies()). We need to drop the first column after encoding a category to avoid the dummy variable trap, since if 
+all category values were present, then there would be multicollinearity, meaning that you could obtain all information in one column by 
+understanding the others. After dropping the first column from encoding and then creating the model, the resulting intercept represents 
+the coefficient from that dropped categorical value. The other coefficients use the intercept as a baseline to assess how the other features 
+values impact the model. For example, say there was the category variable of satisfaction rating and the values were "bad," "ok," and "good."
+After encoding and dropping, we are left with "ok" and "good." When we create the linear model, the intercept represents the expected value 
+of some target variable y when the satisfaction rating is "bad." The first coefficient is then how much the impact of "ok" differs from "bad" 
+and the second coefficient is how much the impact of "good" differs from "bad" (not the absolute impact of "ok" or "good" on their own). To see 
+the absolute impact, you compare the coefficient values to the intercept, like if the intercept has a value of 100 and beta_1 = 50, that means the 
+impact of "ok" would be 100 + 50 = 150. All in all, the coefficient of a dummy variable is its difference from the baseline, represented in the intercept.
+
+
+
+3. Can linear regression be used for classification? Explain why, or why not.
+
+Yes, linear regression can be used for classification. This can be done by setting a threshold on a continuous output range, and using it to define 
+whether the output is assigned to a positive class or not. For example, say we wanted to predict whether a baseball team wins a football game based 
+on payroll. After creating the model, we'll end up with an equation in the form y = mx + b, and we can add a threshold such that if y is above 0.5,
+the model predicts a win, but if y is below 0.5, then the model predicts a loss. Then we can make predictions by plugging in data (x values). However,
+it's difficult to create a valid classification model because linear regression models can still predict values below 0 or above 1, which doesn't align 
+with the probability used for the classification threshold.
+
+
+4. If you have a high accuracy on testing but low on testing, what might be the problem? It also might be you see a pattern in the residuals. 
+
+In this scenario, the model is experiencing overfitting on the data. This is when the model fits the training data really well but fails to generalize 
+well to new data, giving it a low accuracy for this testing data. Overfitting can happen when the model is too complex, such as having too many features
+being used, which causes the model to be extra sensitive to training noise rather than learning the true underlying pattern. The residual pattern can be 
+an indicator of an overfit model because it means the model is missing the structure in the data. For example, if the residuals - the difference between 
+actual and predicted values - show a curved pattern like a parabola, then that means the relationship in the data is nonlinear but we used a linear model 
+to try to predict it. 
+
+
+
+5. Review this page: [Non-Linear with Linear](https://inria.github.io/scikit-learn-mooc/python_scripts/linear_regression_non_linear_link.html) What are 
+two ways to incorporate nonlinear relationships between your target/response/dependent/outcome variable $y$ and your features/control/response/independent 
+variables $x$?
+
+One way to incorporate nonlinear relationships between dependent and independent variable is through a decision tree regression. This type of model is inherently
+nonlinear. It splits the input space (x) into regions and then predicts a constant value in each region. In a visualization of the data, this would look like
+a stepladder through the data points, allowing the model to adapt to nonlinear data. The model basically acts as a piecewise function; for example, the tree 
+could decide that x values below 3 correspond to a y value of 100, values between 3 and 5 predict 150, and x values above 5 the model predicts 200. 
+
+A second way to include a nonlinear relationship between target and feature variables is to engineer a different set of features through polynomial regression.
+For example, this could mean constructing a model such that $y = beta_0 + beta_1 * x + beta_2 * x^2$. Adding nonlinear features like $x^2$ still keeps the model linear 
+in the parameters (betas) but is able to fit nonlinear data by curving the regression line on a plot. Polynomial regression reshapes the features themselves so that it can 
+best match the underlying relationship in the data. However, we want to make sure the degree of the polynomial isn't too high since that can lead to overfitting.
+
+
+
+
+6. What is the interpretation of the intercept? A slope coefficient for a variable? The coefficient for a dummy/one-hot-encoded variable?
+
+
+The intercept in a linear regression model is the predicted value of y when all the features (independent variables) are 0. It's a baseline 
+reference point, but when they are dummy variables, it's the expected value of y for the baseline category that was dropped from encoding.
+
+The slope coefficient for a variable describes the change in y for a 1 unit increase in x, holding all other variables constant. For example, 
+if the target variable is salary and the feature variable is years of education, and the coefficient for years of education is 10 (thousand), 
+that means an additional year of education leads to an increase in salary of $10,000, on average. 
+
+The coefficient for a one-hot-encoded variable is the difference in the expected y from that category compared to the baseline category 
+(the intercept), holding all variables constant. It's different than the coefficient for a regular variable because for a dummy variable, 
+the coefficient isn't the absolute impact on y but rather its relation to the baseline category.
+
